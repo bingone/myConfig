@@ -1,3 +1,37 @@
+map <F5> :!ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .<CR><CR> :TlistUpdate<CR>
+imap <F5> <ESC>:!ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .<CR><CR> :TlistUpdate<CR>
+set tags=tags
+set tags+=./tags "add current directory's generated tags file
+
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+
+" install Syntastic
+Plugin 'scrooloose/syntastic'
+" install NERD Commenter
+Plugin 'scrooloose/nerdcommenter'
+" install NERD Tree
+Plugin 'scrooloose/nerdtree'
+" install tagbar
+Plugin 'majutsushi/tagbar'
+" use plugin ctags
+" ctag -R /src
+"""""""""""""""""""""""""""""""""""""
 set nocompatible " 关闭 vi 兼容模式
 set encoding=utf-8
 syntax on " 自动语法高亮
@@ -19,7 +53,7 @@ set hlsearch " 搜索时高亮显示被找到的文本
 set noerrorbells " 关闭错误信息响铃
 set novisualbell " 关闭使用可视响铃代替呼叫
 set t_vb= " 置空错误铃声的终端代码
-" set showmatch " 插入括号时，短暂地跳转到匹配的对应括号
+set showmatch " 插入括号时，短暂地跳转到匹配的对应括号
 " set matchtime=2 " 短暂跳转到匹配括号的时间
 "set magic " 设置魔术
 set hidden " 允许在有未保存的修改时切换缓冲区，此时的修改由 vim 负责保存
@@ -37,5 +71,8 @@ set foldmethod=syntax " 设置语法折叠
 set foldcolumn=0 " 设置折叠区域的宽度
 setlocal foldlevel=1 " 设置折叠层数为
 " set foldclose=all " 设置为自动关闭折叠 
-" nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+ nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 " 用空格键来开关折叠
+"使用SuperTab
+"set mouse=a
+let g:SuperTabDefaultCompletionType = "context"
