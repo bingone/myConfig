@@ -1,0 +1,87 @@
+
+#参考 https://github.com/tzlwin/my-scripts/tree/master/expect_scripts
+#http://inguza.com/document/expect-and-tcl-mini-reference-manual expect-manual
+#http://bbs.chinaunix.net/thread-3566066-1-1.html FAQ
+#http://bbs.chinaunix.net/thread-639081-1-1.html FAQ
+#http://bbs.chinaunix.net/thread-594417-1-1.html FAQ
+#http://bbs.chinaunix.net/forum.php?mod=viewthread&tid=674903&page=1#pid4559521
+#http://linux.chinaunix.net/techdoc/beginner/2009/03/02/1100264.shtml  zh_cn manual
+#http://www.tcl.tk/man/tcl8.5/tutorial/tcltutorial.html TCL-GOV
+#http://wiki.tcl.tk/201 官方wiki
+#!/usr/bin/expect
+#su ssh deploy multideploy
+#exp_internal 1 调试信息
+#1 命令参数 http://www.startos.com/linux/tips/2011010720609.html
+参数 -d 调试 -b 逐条执行
+expect可以让你使用“-c”选项，直接在命令行中执行它，如下所示：
+$ expect -c 'expect "\n" {send "pressed enter\n"} 按下回车后，打印出press...
+用spawn来执行一条shell命令，不然你的输出都没用。 -noecho 参数表示没有回显
+send_user 相当于echo 让界面显示的内容
+############################################################
+#2 接收输入参数
+set a [lindex $args 0] ....... $argc  表明参数个数
+set arg [append arg ${arg} [lindex $argv $i] " "] 参数拼接
+
+#3 计算
+[expr 2-1]
+
+#4 控制语句
+
+#5 函数
+proc do_login {login pass} { # 这个{不能换行
+      …………
+}
+
+#5 调用shell变量
+#!/usr/bin/expect -f
+set password 123456
+set date [exec date "+%Y-%m-%d"]
+spawn /usr/bin/scp root@1.1.1.1://backup/test-file-$date /test/backup/
+expect "assword:"
+send -- "$password\r"
+expect "assword:"
+send -- "$password\r"
+expect eof
+#返回结果给shell
+expect 返回值给bash，expect中  system “echo a" 
+
+#expect 详解
+这样是并行匹配，也是比较推荐的一种
+exp_continue 是继续循环匹配
+expect {
+    "assword" {
+        send_user "sudo now\n"
+        send "$passwd\n"
+        exp_continue
+    }
+    eof
+    {
+        send_user "eof\n"
+    }
+}
+$expect_out(0,string) 是输出匹配到的信息,若用-re 则可以使用分组获取信息
+$expect_out(buffer) 匹配到的信息包括在此之前未被匹配到的，但是后面没有匹配到的不保留
+
+
+
+
+
+
+
+命令匹配以\$ $ 来匹配所有内容
+字符串操作
+
+文件操作
+打开文件 set file [open tools.ret w+]
+写入文件 puts $file "success"
+读取文件 
+if {[file isfile $file]!=1} 
+{ 
+send_user "$argv0: file $file not found. 
+" 
+exit }}
+
+
+#日志
+
+log_file [clock format [clock seconds]  -format "%Y-%m-%d"].to.log

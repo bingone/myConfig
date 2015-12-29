@@ -1,0 +1,33 @@
+#!/usr/bin/expect
+# http://bbs.chinaunix.net/thread-3566066-1-1.html
+set f [open ip r]
+while { [gets $f line ]>=0 } {
+
+    set ip [lindex $line 0]
+    set pwd [lindex $line 1]
+    spawn ssh $ip 
+
+       expect {
+                    "not know" {send_user "[exec echo \"not know\"]";exit}
+
+                    "(yes/no)?" {send "yes\r";exp_continue}
+
+                    "password:" {send  "$pwd\r"}
+
+                    "Permission denied, please try again." { send_user "[exec echo \"Error:Password is wrong\"]" 
+                                                              
+                                                       exit  }
+                }
+expect "#"
+send "ifconfig\r"
+expect "#"
+send "exit\r"
+expect eof
+              
+         }
+close $f
+
+#利用tcl文件操作知识，把脚本内容读取赋给cmd,然后send过去。
+open urscript [ open A.sh  ]
+while {[ gets $urscript cmd  ] >= 0} {send "$cmd\r"}
+close $urscript

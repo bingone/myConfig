@@ -1,0 +1,52 @@
+
+#!/usr/bin/expect
+#expect 学习1 创建用户 from:http://blog.csdn.net/mozart_cai/article/details/8644081
+#[] 表示使用TCL语句
+
+set passwd "mypasswd"
+set timeout 60
+
+if {$argc != 1} {
+    send "usage ./account.sh \$newaccount\n"
+    exit
+}
+
+set user [lindex $argv [expr $argc-1]]
+
+spawn sudo useradd -s /bin/bash -g mygroup -m $user
+
+expect {
+    "assword" {
+        send_user "sudo now\n"
+        send "$passwd\n"
+        exp_continue
+    }
+    eof
+    {
+        send_user "eof\n"
+    }
+}
+
+spawn sudo passwd $user
+expect {
+    "assword" {
+        send "$passwd\n"
+        exp_continue
+    }
+    eof
+    {
+        send_user "eof"
+    }
+}
+
+spawn sudo smbpasswd -a $user
+expect {
+    "assword" {
+        send "$passwd\n"
+        exp_continue
+    }
+    eof
+    {
+        send_user "eof"
+    }
+}

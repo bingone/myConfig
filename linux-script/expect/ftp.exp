@@ -1,0 +1,22 @@
+
+#!/usr/bin/expect -f  
+ set ip [lindex $argv 0 ]  
+ set dir [lindex $argv 1 ]  
+ set file [lindex $argv 2 ]  
+ set timeout 10  
+ spawn ftp $ip  
+ expect "Name*"  
+ send "zwh\r"  
+ expect "Password:*"  
+ send "zwh\r"  
+ expect "ftp>*"  
+ send "lcd $dir\r"  
+ expect {  
+ "*file"  { send_user "local $_dir No such file or directory";send "quit\r" }  
+ "*now*"  { send "get $dir/$file $dir/$file\r"}  
+ }  
+ expect {  
+ "*Failed" { send_user "remote $file No such file";send "quit\r" }  
+ "*OK"     { send_user "$file has been download\r";send "quit\r"}  
+ }  
+ expect eof
