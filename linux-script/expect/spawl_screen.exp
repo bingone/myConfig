@@ -1,0 +1,149 @@
+
+[root@localhost expect]# cat Grab
+#!/bin/bash
+# \
+        exec expect "$0" "$@"
+ 
+#------- write by Neil.xu 2008.0903 QQ:37391319 Email: xurongzhong#gmail.com--------
+#------- function : used to ssh a server and execute a command----
+ 
+    spawn bash
+ 
+    send "ls -l\n"
+ 
+    set accum {}
+    expect {
+        -regexp {..*} {
+            set accum "${accum}$expect_out(0,string)"
+                set timeout 1
+            exp_continue
+        }
+    }
+    expect "#"
+    puts "\n---------RESULT--------\n"
+    puts $accum
+puts "\n------------END OF RESULT\n"
+ 
+exp_continue个人理解的意思是即使expect退出后，依旧保留返回值。但是要等到超时之后，为此可以吧timeout修改得小一点。默认值是10s。但是最小为1，为0的话将会执行失败。
+ 
+执行结果：
+# ./Grab  
+spawn bash
+ls -l
+[root@localhost expect]# ls -l
+×ÜÓÃÁ¿ 88
+-rwxrwxrwx  1 root root 1621  9ÔÂ  2 16:51 autopasswd
+-rwxrwxrwx  1 root root  477  9ÔÂ  5 08:10 Grab
+-rwxrwxrwx  1 root root  124  9ÔÂ  4 18:48 scp_test
+-rwxrwxrwx  1 root root 1776  9ÔÂ  3 10:29 script.exp
+-rwxrwxrwx  1 root root 1552  9ÔÂ  4 17:50 ssh2
+-rwxrwxrwx  1 root root 1814  9ÔÂ  5 07:38 ssh2Host
+-rwxrwxrwx  1 root root  467  9ÔÂ  3 09:35 ssh2Host_bak
+-rwxrwxrwx  1 root root  141  9ÔÂ  2 16:11 ssh.tcl
+-rwxrwxrwx  1 root root 1478  9ÔÂ  2 14:31 tel
+-rwxrwxrwx  1 root root  189  9ÔÂ  4 14:38 test.exp
+-rwxrwxrwx  1 root root 1357  9ÔÂ  4 19:11 upload
+[root@localhost expect]#
+---------RESULT--------
+ 
+ls -l
+[root@localhost expect]# ls -l
+×ÜÓÃÁ¿ 88
+-rwxrwxrwx  1 root root 1621  9ÔÂ  2 16:51 autopasswd
+-rwxrwxrwx  1 root root  477  9ÔÂ  5 08:10 Grab
+-rwxrwxrwx  1 root root  124  9ÔÂ  4 18:48 scp_test
+-rwxrwxrwx  1 root root 1776  9ÔÂ  3 10:29 script.exp
+-rwxrwxrwx  1 root root 1552  9ÔÂ  4 17:50 ssh2
+-rwxrwxrwx  1 root root 1814  9ÔÂ  5 07:38 ssh2Host
+-rwxrwxrwx  1 root root  467  9ÔÂ  3 09:35 ssh2Host_bak
+-rwxrwxrwx  1 root root  141  9ÔÂ  2 16:11 ssh.tcl
+-rwxrwxrwx  1 root root 1478  9ÔÂ  2 14:31 tel
+-rwxrwxrwx  1 root root  189  9ÔÂ  4 14:38 test.exp
+-rwxrwxrwx  1 root root 1357  9ÔÂ  4 19:11 upload
+[root@localhost expect]#
+ 
+------------END OF RESULT
+ 
+[root@localhost expect]#
+ 
+如果要在模块化程序中使用，必须在全局调用spawn。uplevel #0 {spawn bash}，使用[incr tcl] RJ的时候也是如此。$spawn_id全局化是一种方法，也可以在$spawn_id中使用-i参数。dcd把这个也应用到了expect_out。 实例：
+ 
+proc kermconnect {} {
+       global opts expect_out spawn_id telnetbase
+ 
+       if {$opts(host) ne ""} {
+          spawn kermit -Y -j $opts(host) [expr $telnetbase + $opts(port)]
+       } else {
+         # use default kermit settings
+          spawn kermit
+       }
+       set try 0
+       expect {
+         "C-Kermit>" { send c\r }
+         timeout {
+             if {$try == 0} {
+                send "set prompt\r"
+                incr try
+                exp_continue
+             }
+             failed "finding C-Kermit prompt"
+         }
+        }
+    }
+    proc kermdisconnect {} {
+    global expect_out spawn_id
+ 
+    expect "Kermit>" { send "close\r"}
+    expect {
+        timeout {failed "close connection"}
+        -re "Closing connection.*Kermit>" { send q\r; after 100 }
+    }
+    uplevel #0 catch {close}
+    uplevel #0 catch {wait}
+   }
+ 
+RJ 有一种简单的获取输出的方法：
+proc exec_it {command}     {
+      spawn -noecho $command
+      log_user 0
+      expect eof
+      return [string trimleft $expect_out(buffer) $command]
+   }
+ 
+ 
+另外一个抓取的实例：
+# cat ping
+# !/bin/bash
+# \
+exec tclsh "$0" "$@"
+ 
+set host "10.50.15.250"
+set successFlag "64 bytes from"
+set ret [ exec ping -c2 -w10 $host ]
+    puts "\n---------RESULT--------\n"
+puts $ret
+puts "\n------------END OF RESULT\n"
+if { [ string first $successFlag $ret ] != -1 } {
+        puts " Ping $host successfully!"
+} else {
+        puts " Ping failed!"
+}
+ 
+执行结果：
+ 
+# ./ping
+ 
+---------RESULT--------
+ 
+PING 10.50.15.250 (10.50.15.250) 56(84) bytes of data.
+64 bytes from 10.50.15.250: icmp_seq=0 ttl=61 time=0.242 ms
+64 bytes from 10.50.15.250: icmp_seq=1 ttl=61 time=0.187 ms
+ 
+--- 10.50.15.250 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 999ms
+rtt min/avg/max/mdev = 0.187/0.214/0.242/0.031 ms, pipe 2
+ 
+------------END OF RESULT
+ 
+ Ping 10.50.15.250 successfully!
+[root@localhost tcl]#

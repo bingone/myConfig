@@ -1,0 +1,6 @@
+set command [lindex $argv 0]
+spawn -noecho $command 
+
+    log_user 0
+    expect eof
+    puts [string trimleft $expect_out(buffer) ]
