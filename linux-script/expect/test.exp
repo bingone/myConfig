@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+#1
+set AHost [lindex $argv 0]
+puts $AHost
+#2
+set file [open "/home/admin/tools/conf/$AHost" r]
+#3
+set hosts [read $file]
+foreach host $hosts {
+    puts $host
+}
+
+

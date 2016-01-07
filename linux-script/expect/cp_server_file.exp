@@ -1,0 +1,41 @@
+#!/usr/bin/expect -f
+set prompt "((%|#|\\$|:) |>|])$"
+ if [info exists env(EXPECT_PROMPT)] {
+set prompt $env(EXPECT_PROMPT)
+  }
+set force_conservative 0
+match_max 10000000
+set timeout 5
+set user nick
+set password "passlapundek"
+set hosts [lindex $argv 0]
+set hosts2 [open $hosts r]
+set hosts [read $hosts2]
+set command [lindex $argv 1]
+set accum {}
+set log [open "/root/test/log.txt" "w"]
+foreach host $hosts {
+spawn ssh -l $user $host
+expect -timeout 30 -nocase "*assword:"
+send "$password\r"
+expect -re $prompt
+set cmds1 [open $command r]
+set cmds [read $cmds1]
+
+exp_send "$cmds\r"
+
+    expect {
+        -regexp {..*} {
+            set accum "${accum}$expect_out(0,string)"
+            exp_continue
+        }
+    }
+
+    puts $log $accum
+send "\r"
+send "exit\r"
+expect eof
+}
+#https://daihatsukite.wordpress.com/tag/expect-script-capture-output/
+#I been ask to create a script to copy the /etc/passwd file in all server and i made it again.
+#The different about this script is it will capture all the output into one log file and i mean EVERYTHING including the command that you use

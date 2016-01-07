@@ -1,0 +1,52 @@
+#!/usr/bin/expect 
+#exp_internal 1
+set timeout 10 
+set user admin
+set port 22
+set pwd xxx
+set host xxx.xxx.xxx.xxx 
+match_max 1000000000
+set packHost [lindex $argv 0]
+set filePath  [lindex $argv 1]
+set arg ""
+
+if { $argc == 0 || $argc == 1 } {
+	puts "argv is wa";
+	exit;
+}
+
+for {set i 2} { $i <$argc } { incr i } {
+	#puts [lindex $argv $i]
+	set arg [append arg ${arg} [lindex $argv $i] " "]
+}
+#puts $arg
+#puts $argc
+
+#set prompt "((%|#|\\$|:) |>|])$"
+set prompt "$ "
+log_file [clock format [clock seconds]  -format "%Y-%m-%d"].to.log
+
+spawn  ssh -l $user -p $port $host
+expect "password:"
+send  "$pwd\r" 
+expect $prompt
+send "ssh $packHost\r"
+expect $prompt
+send "echo $?\r"
+expect {
+    "0" {}
+    timeout {puts "failure";}
+}
+expect $prompt
+send "sh $filePath $arg\r"
+expect $prompt
+send "echo $?\r"
+expect {
+    "0" {puts "\nsuccess";}
+    timeout {puts "\nfailure";}
+}
+
+send "exit\r"
+expect $prompt
+send "exit\r"
+expect eof
