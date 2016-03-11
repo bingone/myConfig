@@ -15,6 +15,9 @@ fi
 echo $CODE_PATH
 cd $CODE_PATH
 ret=$(ls -l | awk '
+BEGIN{
+    cnt=1
+}
 {
     if(NR > 1){
         if($1 !~ /^d/){
